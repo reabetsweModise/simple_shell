@@ -10,39 +10,38 @@
  */
 	ssize_t input_buf(info_t *info, char **buf, size_t *len)
 {
-		ssize_t rs = 0;
-		size_t lp = 0;
+	ssize_t status_returned = 0;
+	size_t length_pointer = 0;
 
-		if (!*len) /* if nothing left in the buffer, fill it */
-		{
-			/*bfree((void **)info->cmd_buf);*/
-			free(*buf);
-			*buf = NULL;
-			signal(SIGINT, sigintHandler);
+	if (!*len) /* if nothing left in the buffer, fill it */
+	{
+		/*bfree((void **)info->cmd_buf);*/
+		free(*buf);
+		*buf = NULL;
+		signal(SIGINT, sigintHandler);
 #if USE_GETLINE
-			rs = getline(buf, &len_p, stdin);
+		r = getline(buf, &len_p, stdin);
 #else
-			rs = _getline(info, buf, &lp);
+		status_returned = _getline(info, buf, &len_p);
 #endif
-			if (r > 0)
+		if (r > 0)
+		{
+			if ((*buf)[r - 1] == '\n')
 			{
-				if ((*buf)[rs - 1] == '\n')
-				{
-					(*buf)[rs - 1] = '\0'; /* remove trailing newline */
-					r--;
-				}
-				info->linecount_flag = 1;
-				remove_comments(*buf);
-				build_history_list(info, *buf, info->histcount++);
-				/* if (_strchr(*buf, ';')) is this a command chain? */
-				{
-					*len = rs;
-					info->cmd_buf = buf;
-				}
+				(*buf)[r - 1] = '\0'; /* remove trailing newline */
+				status_returned--;
+			}
+			info->linecount_flag = 1;
+			remove_comments(*buf);
+			build_history_list(info, *buf, info->histcount++);
+			/* if (_strchr(*buf, ';')) is this a command chain? */
+			{
+				*len = r;
+				info->cmd_buf = buf;
 			}
 		}
-		return (rs);
-
+	}
+	return (r);
 }
 
 /**
@@ -55,11 +54,11 @@ ssize_t get_input(info_t *info)
 {
 	static char *buf; /* the ';' command chain buffer */
 	static size_t current_pos, j, len;
-	ssize_t rs = 0;
+	ssize_t status_returned = 0;
 	char **buf_p = &(info->arg), *p;
 
 	_putchar(BUF_FLUSH);
-	rs = input_buf(info, &buf, &len);
+	status_returned = input_buf(info, &buf, &len);
 	if (r == -1) /* EOF */
 		return (-1);
 	if (len) /* we have commands left in the chain buffer */
@@ -87,7 +86,7 @@ ssize_t get_input(info_t *info)
 	}
 
 	*buf_p = buf; /* else not a chain, pass back buffer from _getline() */
-	return (rs); /* return length of buffer from _getline() */
+	return (r); /* return length of buffer from _getline() */
 }
 
 /**
@@ -100,14 +99,14 @@ ssize_t get_input(info_t *info)
  */
 ssize_t read_buf(info_t *info, char *buf, size_t *i)
 {
-	ssize_t rs= 0;
+	ssize_t status_returned = 0;
 
 	if (*i)
 		return (0);
-	rs = read(info->readfd, buf, READ_BUF_SIZE);
-	if (rs >= 0)
-		*i = rs;
-	return (rs);
+	status_returned = read(info->readfd, buf, READ_BUF_SIZE);
+	if (status_returned >= 0)
+		*i = status_returned;
+	return (status_returned);
 }
 
 /**
@@ -123,7 +122,7 @@ int _getline(info_t *info, char **ptr, size_t *length)
 	static char buf[READ_BUF_SIZE];
 	static size_t current_pos, len;
 	size_t cmd_length;
-	ssize_t rs = 0, cmd_status = 0;
+	ssize_t status_returned = 0, cmd_status = 0;
 	char *p = NULL, *new_p = NULL, *c;
 
 	p = *ptr;
@@ -132,13 +131,14 @@ int _getline(info_t *info, char **ptr, size_t *length)
 	if (current_pos == len)
 		current_pos = len = 0;
 
-	rs = read_buf(info, buf, &len);
-	if (rs == -1 || (rs == 0 && len == 0))
+	status_returned = read_buf(info, buf, &len);
+	if (status_returned == -1 || (status_returned == 0 && len == 0))
 		return (-1);
 
 	c = _strchr(buf + current_pos, '\n');
 	cmd_length = c ? 1 + (unsigned int)(c - buf) : len;
-	new_p = _realloc(p, cmd_status, cmd_status ? cmd_status + cmd_length : cmd_length + 1);
+	new_p = _realloc(p, cmd_status, cmd_status ?
+			cmd_status + cmd_length : cmd_length + 1);
 	if (!new_p) /* MALLOC FAILURE! */
 		return (p ? free(p), -1 : -1);
 

@@ -1,3 +1,3 @@
-simple shell  project 
+simple shell  project
 author :Reabetswe Modise
 	Sandile Situlo

@@ -84,8 +84,8 @@ int read_history(info_t *info)
 	buf[hist_fsize] = 0;
 	if (bytes_read <= 0)
 		return (free(buf), 0);
-	close(fd);
-	for (i = 0; i < fsize; i++)
+	close(file_descriptor);
+	for (i = 0; i < hist_fsize; i++)
 		if (buf[i] == '\n')
 		{
 			buf[i] = 0;

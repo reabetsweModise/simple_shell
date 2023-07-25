@@ -48,9 +48,9 @@ char **list_to_strings(list_t *head)
 		}
 
 		str = _strcpy(str, node->str);
-		strs[current_pos] = str;
+		strs[first_counter] = str;
 	}
-	strs[i] = NULL;
+	strs[first_counter] = NULL;
 	return (strs);
 }
 

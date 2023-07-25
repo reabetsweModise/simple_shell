@@ -18,7 +18,7 @@
 			if (s[index] >= '0' && s[index] <= '9')
 			{
 				my_res *= 10;
-				my_res += (s[i] - '0');
+				my_res += (s[index] - '0');
 				if (my_res > INT_MAX)
 					return (-1);
 			}

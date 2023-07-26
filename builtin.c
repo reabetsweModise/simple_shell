@@ -81,7 +81,8 @@ int _mycd(info_t *info)
 }
 /**
  * _myhelp -This Function changes the current directory of the process
- * @info:This parameter Structure containing potential arguments. Used to maintain
+ * @info:This parameter Structure containing potential arguments.
+ * Used to maintain
  * constant function prototype.
  * Return: Always 0
  */
